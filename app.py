@@ -1,134 +1,4 @@
-# from flask import Flask, render_template, request, redirect, url_for, jsonify
-# import sqlite3
-# from datetime import datetime, timedelta
 
-# # --- Flask App ---
-# app = Flask(__name__)
-# @app.template_filter('zip')
-# def zip_filter(a, b):
-#     return zip(a, b)
-
-# # --- Database Setup ---
-# conn = sqlite3.connect("habits.db", check_same_thread=False)
-# cursor = conn.cursor()
-
-# targets = {"water": 8, "exercise": 30, "sleep": 8, "study": 4}
-
-# # --- Create Table if not exists ---
-# cursor.execute("""
-# CREATE TABLE IF NOT EXISTS habits (
-#     date TEXT PRIMARY KEY,
-#     water INTEGER DEFAULT 0,
-#     exercise INTEGER DEFAULT 0,
-#     sleep INTEGER DEFAULT 0,
-#     study INTEGER DEFAULT 0
-# )
-# """)
-# conn.commit()
-
-# # --- Helper Functions ---
-# def init_today():
-#     today = datetime.today().strftime("%Y-%m-%d")
-#     cursor.execute("SELECT * FROM habits WHERE date=?", (today,))
-#     if cursor.fetchone() is None:
-#         cursor.execute("INSERT INTO habits VALUES (?, 0, 0, 0, 0)", (today,))
-#         conn.commit()
-
-# def get_today_habits():
-#     today = datetime.today().strftime("%Y-%m-%d")
-#     cursor.execute("SELECT water, exercise, sleep, study FROM habits WHERE date=?", (today,))
-#     return cursor.fetchone()
-
-# def update_habit(habit, amount):
-#     today = datetime.today().strftime("%Y-%m-%d")
-#     cursor.execute(f"UPDATE habits SET {habit} = {habit} + ? WHERE date=?", (amount, today))
-#     conn.commit()
-
-# def get_last_n_days(n=30):
-#     today = datetime.today().date()
-#     start_date = today - timedelta(days=n-1)
-#     cursor.execute("SELECT date, water, exercise, sleep, study FROM habits WHERE date >= ?", (start_date.strftime("%Y-%m-%d"),))
-#     return cursor.fetchall()
-
-# def calculate_calendar_and_streak(days=30):
-#     records = get_last_n_days(days)
-#     today = datetime.today().date()
-#     start_date = today - timedelta(days=days-1)
-#     records_dict = {datetime.strptime(d, "%Y-%m-%d").date(): (w, e, s, st) for d, w, e, s, st in records}
-
-#     calendar = []
-#     current_streak = 0
-#     best_streak = 0
-#     last_day = None
-
-#     for i in range(days):
-#         day = start_date + timedelta(days=i)
-#         if day in records_dict:
-#             w, e, s, st = records_dict[day]
-#             if w>=targets["water"] and e>=targets["exercise"] and s>=targets["sleep"] and st>=targets["study"]:
-#                 symbol = "🟩"
-#                 if last_day and (day - last_day).days == 1:
-#                     current_streak += 1
-#                 else:
-#                     current_streak = 1
-#                 best_streak = max(best_streak, current_streak)
-#             else:
-#                 symbol = "⬜"
-#                 current_streak = 0
-#         else:
-#             symbol = "⬜"
-#             current_streak = 0
-#         last_day = day
-#         calendar.append(symbol)
-
-#     return "".join(calendar), current_streak, best_streak
-
-# # --- API Route for Chart.js ---
-# @app.route("/chart-data")
-# def chart_data():
-#     records = get_last_n_days(7)  # last 7 days for chart
-#     labels = [datetime.strptime(d, "%Y-%m-%d").strftime("%b %d") for d, *_ in records]
-#     water = [w for d, w, e, s, st in records]
-#     exercise = [e for d, w, e, s, st in records]
-#     sleep = [s for d, w, e, s, st in records]
-#     study = [st for d, w, e, s, st in records]
-
-#     return jsonify({
-#         "labels": labels,
-#         "water": water,
-#         "exercise": exercise,
-#         "sleep": sleep,
-#         "study": study
-#     })
-
-# # --- Main Route ---
-# @app.route("/", methods=["GET", "POST"])
-# def index():
-#     init_today()
-    
-#     if request.method == "POST":
-#         habit = request.form.get("habit")
-#         amount = int(request.form.get("amount"))
-#         if habit in targets:
-#             update_habit(habit, amount)
-#         return redirect(url_for("index"))
-
-#     habits = get_today_habits()
-#     calendar, curr_streak, best_streak = calculate_calendar_and_streak()
-#     habits_list = list(zip(targets.keys(), habits))  # Prepare list for template
-
-#     return render_template(
-#         "index.html",
-#         habits_list=habits_list,
-#         targets=targets,
-#         calendar=calendar,
-#         curr_streak=curr_streak,
-#         best_streak=best_streak
-#     )
-
-# # --- Run App ---
-# if __name__ == "__main__":
-#     app.run(debug=True)
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime, timedelta
@@ -195,7 +65,7 @@ def init_today():
     today = datetime.today().strftime("%Y-%m-%d")
     cursor.execute("SELECT * FROM habits WHERE date=?", (today,))
     if cursor.fetchone() is None:
-        cursor.execute("INSERT INTO habits VALUES (?, 0, 0, 0, 0)", (today,))
+        cursor.execute("INSERT INTO habits VALUES (?, 0, 0, 0, 0, 0)", (today,))
         conn.commit()
 
 def get_today_habits():
@@ -278,6 +148,25 @@ def get_compliment():
         "Outstanding! You crushed your goals today 🏆"
     ]
     return random.choice(compliments)
+def update_streak_for_today():
+    today = datetime.today().strftime("%Y-%m-%d")
+    cursor.execute("SELECT water, exercise, sleep, study FROM habits WHERE date=?", (today,))
+    w, e, s, st = cursor.fetchone()
+    
+    # Check if all targets met
+    if w >= targets["water"] and e >= targets["exercise"] and s >= targets["sleep"] and st >= targets["study"]:
+        # get yesterday's streak
+        yesterday = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+        cursor.execute("SELECT streak FROM habits WHERE date=?", (yesterday,))
+        row = cursor.fetchone()
+        yesterday_streak = row[0] if row else 0
+        today_streak = yesterday_streak + 1
+    else:
+        today_streak = 0
+    
+    # update today streak
+    cursor.execute("UPDATE habits SET streak=? WHERE date=?", (today_streak, today))
+    conn.commit()
 
 # --- API Route for Chart.js ---
 @app.route("/chart-data")

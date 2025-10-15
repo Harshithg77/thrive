@@ -2,41 +2,121 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Health Habit Coach</title>
+  <title>Thrive – Your Wellness Coach</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2966/2966486.png">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #d1f4f9, #fef6e4);
+      min-height: 100vh;
+      color: #333;
+    }
+    h1 {
+      font-weight: 700;
+      color: #2b6777;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    }
+    .card {
+      border: none;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    }
+    .card-header {
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-radius: 20px 20px 0 0 !important;
+    }
+    .btn-success {
+      background: linear-gradient(45deg, #38b000, #70e000);
+      border: none;
+      border-radius: 30px;
+      padding: 8px 20px;
+      transition: all 0.2s ease;
+    }
+    .btn-success:hover {
+      transform: scale(1.05);
+      background: linear-gradient(45deg, #2b9348, #55a630);
+    }
+    .calendar {
+      letter-spacing: 2px;
+      font-weight: 600;
+      color: #2b6777;
+    }
+    canvas {
+      max-height: 280px;
+    }
+    .habit-list span:first-child {
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+    .habit-list span:last-child {
+      font-weight: 600;
+      color: #2b6777;
+    }
+    .floating-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background: linear-gradient(135deg, #1e88e5, #42a5f5);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: 600;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .floating-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.25);
+    }
+    .alert-success {
+      border-radius: 15px;
+      font-weight: 500;
+    }
+  </style>
 </head>
 
-<body class="p-4 bg-light">
+<body class="p-4">
 
 <div class="container">
-  <h1 class="mb-4 text-center">🤖 Health Habit Coach</h1>
+  <h1 class="text-center mb-5">🌿 Thrive: Daily Habit Tracker</h1>
 
-  <!-- Today's Progress -->
-   
-  <!-- Today's Progress -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-primary text-white"><strong>Today’s Progress</strong></div>
-    <div class="card-body">
-      <ul class="list-group">
+  <!-- Today’s Progress -->
+  <div class="card mb-4">
+    <div class="card-header bg-gradient bg-primary text-white">Today’s Progress</div>
+    <div class="card-body habit-list">
+      <ul class="list-group list-group-flush">
         {% for habit, amount in habits_list %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span>{{ habit.capitalize() }}</span>
+          <span>{{ habit }}</span>
           <span id="value-{{ habit }}">
             {% if habit == "water" %}
-              {{ amount }} glasses of water
-            {% elif habit == "steps" %}
-              {{ amount }} steps walked
+              {{ amount }} glasses
             {% elif habit == "exercise" %}
               {{ amount }} sets
-            {% elif habit == "reading" %}
-              {{ amount }} pages read
             {% elif habit == "sleep" %}
-              {{ amount }} hours slept
+              {{ amount }} hrs
+            {% elif habit == "study" %}
+              {{ amount }} hrs
             {% else %}
-              {{ amount }} hours
+              {{ amount }}
             {% endif %}
           </span>
         </li>
@@ -44,54 +124,41 @@
       </ul>
     </div>
   </div>
-  <!-- <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-primary text-white"><strong>Today’s Progress</strong></div>
-    <div class="card-body">
-      <ul class="list-group">
-        {% for habit, amount in habits_list %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span>{{ habit.capitalize() }}</span>
-          <span id="value-{{ habit }}">{{ amount }}/{{ targets[habit] }}</span>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div> -->
 
-  <!-- Log Habit Form -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-success text-white"><strong>Log Habit</strong></div>
+  <!-- Log Habit -->
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">Log a Habit</div>
     <div class="card-body">
-      <form method="POST" class="row g-2">
-        <div class="col-auto">
-          <select name="habit" class="form-select">
+      <form method="POST" class="row g-3 justify-content-center align-items-center">
+        <div class="col-md-4">
+          <select name="habit" class="form-select rounded-pill shadow-sm">
             {% for habit in targets.keys() %}
             <option value="{{ habit }}">{{ habit.capitalize() }}</option>
             {% endfor %}
           </select>
         </div>
-        <div class="col-auto">
-          <input type="number" name="amount" min="1" value="1" class="form-control" required>
+        <div class="col-md-3">
+          <input type="number" name="amount" min="1" value="1" class="form-control rounded-pill shadow-sm text-center" required>
         </div>
-        <div class="col-auto">
-          <button type="submit" class="btn btn-success">Log</button>
+        <div class="col-md-3 text-center">
+          <button type="submit" class="btn btn-success">+ Add Progress</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Consistency Calendar -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-info text-white"><strong>Consistency Calendar (Last 30 Days)</strong></div>
+  <!-- Calendar -->
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">Consistency Calendar</div>
     <div class="card-body text-center">
-      <div class="calendar mb-2" style="font-size:18px;">{{ calendar }}</div>
-      <p class="mb-0">🔥 Current Streak: {{ curr_streak }} | 🏆 Best Streak: {{ best_streak }}</p>
+      <div class="calendar mb-3">{{ calendar }}</div>
+      <p class="fw-semibold">🔥 Current Streak: {{ curr_streak }} | 🏆 Best Streak: {{ best_streak }}</p>
     </div>
   </div>
 
-  <!-- Chart.js Progress -->
-  <div class="card mb-4 shadow-sm">
-    <div class="card-header bg-warning"><strong>Last 7 Days Progress</strong></div>
+  <!-- Chart -->
+  <div class="card mb-4">
+    <div class="card-header bg-warning text-dark">Your Progress (7 Days)</div>
     <div class="card-body">
       <canvas id="habitChart"></canvas>
     </div>
@@ -102,157 +169,78 @@
   {% endif %}
 </div>
 
-<!-- success sound -->
+<!-- Floating AI Report Button -->
+<button class="floating-btn" onclick="fetchAIReport()">🧠 Weekly AI Report</button>
+
 <audio id="success-sound" src="{{ url_for('static', filename='success.mp3') }}"></audio>
 
+<!-- Scripts -->
 <script>
-  // -------- CONFIG ----------
-  const NO_PROGRESS_DAYS_THRESHOLD = 2;
-  const REMINDER_HOUR = 18;
-  const POLL_INTERVAL_MS = 60 * 60 * 1000;
-  // --------------------------
+  // Chart.js
+  document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch("/chart-data");
+    const data = await res.json();
+    const ctx = document.getElementById("habitChart").getContext("2d");
 
-  function requestNotificationPermission() {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().then(perm => console.log("Notification permission:", perm));
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label: '💧 Water', data: data.water, fill: false, borderWidth: 2 },
+          { label: '🏋️ Exercise', data: data.exercise, fill: false, borderWidth: 2 },
+          { label: '😴 Sleep', data: data.sleep, fill: false, borderWidth: 2 },
+          { label: '📖 Study', data: data.study, fill: false, borderWidth: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        tension: 0.4,
+        plugins: {
+          legend: { labels: { usePointStyle: true, font: { size: 14 } } }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: "#eee" } }
+        }
+      }
+    });
+  });
+
+  // Fetch AI Feedback (same logic as before)
+  async function fetchAIReport() {
+    try {
+      const resp = await fetch("/generate_ai_feedback");
+      const data = await resp.json();
+
+      if (data.feedback) {
+        burstConfetti(3000);
+        alert("🧠 Your Weekly AI Report:\n\n" + data.feedback);
+        showNotification("Weekly Wellness Report", data.feedback);
+      } else {
+        alert("No data found for the last 7 days.");
+      }
+    } catch (err) {
+      console.error("Error fetching AI feedback:", err);
     }
   }
 
-  function showNotification(title, body, options) {
-    if (!("Notification" in window)) return;
-    if (Notification.permission === "granted") {
-      new Notification(title, Object.assign({ body }, options || {}));
-    }
-  }
-
-  function playSuccessSound() {
-    const sound = document.getElementById("success-sound");
-    if (!sound) return;
-    sound.currentTime = 0;
-    sound.play().catch(e => console.log("Sound play blocked:", e));
-  }
-
+  // Basic confetti for AI report celebration
   function burstConfetti(durationMs=2000) {
     const end = Date.now() + durationMs;
     (function frame() {
-      confetti({
-        particleCount: 6 + Math.floor(Math.random()*6),
-        startVelocity: 30,
-        spread: 360,
-        ticks: 60,
-        origin: { x: Math.random(), y: Math.random() - 0.2 }
-      });
+      confetti({ particleCount: 5 + Math.random()*5, startVelocity: 30, spread: 360, origin: { x: Math.random(), y: Math.random()-0.2 } });
       if (Date.now() < end) requestAnimationFrame(frame);
     })();
   }
 
-  function celebrate(compliment) {
-    playSuccessSound();
-    burstConfetti(2000);
-    showNotification("🎉 Goal Completed!", compliment, {
-      icon: "https://cdn-icons-png.flaticon.com/512/992/992700.png"
-    });
-    const alertBox = document.createElement('div');
-    alertBox.className = "alert alert-success text-center mt-3";
-    alertBox.textContent = "🎉 " + compliment;
-    document.querySelector('.container').prepend(alertBox);
+  function showNotification(title, body) {
+    if ("Notification" in window && Notification.permission === "granted")
+      new Notification(title, { body });
   }
 
-  function handleStatusResponse(json) {
-    if (json.completed_today) {
-      if (!sessionStorage.getItem("celebrated_today")) {
-        celebrate(json.compliment || "You completed today's goals!");
-        sessionStorage.setItem("celebrated_today", "1");
-      }
-    } else {
-      sessionStorage.removeItem("celebrated_today");
-    }
-
-    // Notify if no progress
-    for (const [habit, days] of Object.entries(json.days_since_progress)) {
-      const dsp = days === null ? Infinity : days;
-      if (dsp >= NO_PROGRESS_DAYS_THRESHOLD) {
-        const key = `notified_no_progress_${habit}`;
-        const lastNotified = parseInt(localStorage.getItem(key) || "0");
-        const now = Date.now();
-        const ONE_DAY = 24*60*60*1000;
-        if (now - lastNotified > ONE_DAY) {
-          const body = dsp === Infinity
-            ? `You haven't started with ${habit} yet — small steps matter!`
-            : `No progress on ${habit} for ${dsp} days. Try a small step now.`;
-          showNotification(`Reminder: ${habit}`, body);
-          localStorage.setItem(key, now.toString());
-        }
-      }
-    }
-
-    // Evening reminder
-    const now = new Date();
-    if (now.getHours() >= REMINDER_HOUR && json.incomplete_habits.length > 0) {
-      const key = `notified_incomplete_today`;
-      const lastNotified = parseInt(localStorage.getItem(key) || "0");
-      const nowMs = Date.now();
-      const ONE_DAY = 24*60*60*1000;
-      if (nowMs - lastNotified > ONE_DAY) {
-        const names = json.incomplete_habits.map(i => `${i.habit} (${i.value}/${i.target})`).join(", ");
-        const body = `You're not done yet: ${names}. A little progress now counts.`;
-        showNotification("Don't give up — you're close!", body);
-        localStorage.setItem(key, nowMs.toString());
-      }
-    }
-  }
-
-  async function pollStatusAndHandle() {
-    try {
-      const resp = await fetch("/status");
-      if (!resp.ok) return console.error("Status fetch failed:", resp.status);
-      const json = await resp.json();
-
-      // update values dynamically
-      for (const h of Object.keys(json.days_since_progress)) {
-        const el = document.getElementById("value-" + h);
-        if (el && json.incomplete_habits) {
-          const found = json.incomplete_habits.find(x => x.habit === h);
-          if (found) el.textContent = `${found.value}/${found.target}`;
-        }
-      }
-      handleStatusResponse(json);
-    } catch (e) {
-      console.error("Error polling status:", e);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    requestNotificationPermission();
-
-    const serverCompl = document.getElementById("server-compliment");
-    if (serverCompl && serverCompl.textContent.trim() !== "" && !sessionStorage.getItem("celebrated_today")) {
-      celebrate(serverCompl.textContent.trim());
-      sessionStorage.setItem("celebrated_today", "1");
-    }
-
-    pollStatusAndHandle();
-    setInterval(pollStatusAndHandle, POLL_INTERVAL_MS);
-  });
-  async function fetchAIReport() {
-  try {
-    const resp = await fetch("/generate_ai_feedback");
-    const data = await resp.json();
-
-    if (data.feedback) {
-      // Show alert, confetti, or notification
-      alert("🧠 Your Weekly Report:\n\n" + data.feedback);
-      showNotification("Weekly Progress Report", data.feedback);
-    } else {
-      alert("No data found for the last 7 days.");
-    }
-  } catch (err) {
-    console.error("Error fetching AI feedback:", err);
-  }
-}
-
+  if ("Notification" in window && Notification.permission === "default")
+    Notification.requestPermission();
 </script>
-
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
