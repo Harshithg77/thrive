@@ -9,94 +9,39 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2966/2966486.png">
   <style>
-    * {
-      font-family: 'Poppins', sans-serif;
-    }
-    body {
-      background: linear-gradient(135deg, #d1f4f9, #fef6e4);
-      min-height: 100vh;
-      color: #333;
-    }
-    h1 {
-      font-weight: 700;
-      color: #2b6777;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 3px rgba(0,0,0,0.1);
-    }
-    .card {
-      border: none;
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.7);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    }
-    .card-header {
-      font-weight: 600;
-      font-size: 1.1rem;
-      border-radius: 20px 20px 0 0 !important;
-    }
-    .btn-success {
-      background: linear-gradient(45deg, #38b000, #70e000);
-      border: none;
-      border-radius: 30px;
-      padding: 8px 20px;
-      transition: all 0.2s ease;
-    }
-    .btn-success:hover {
-      transform: scale(1.05);
-      background: linear-gradient(45deg, #2b9348, #55a630);
-    }
-    .calendar {
-      letter-spacing: 2px;
-      font-weight: 600;
-      color: #2b6777;
-    }
-    canvas {
-      max-height: 280px;
-    }
-    .habit-list span:first-child {
-      font-weight: 500;
-      text-transform: capitalize;
-    }
-    .habit-list span:last-child {
-      font-weight: 600;
-      color: #2b6777;
-    }
-    .floating-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 25px;
-      background: linear-gradient(135deg, #1e88e5, #42a5f5);
-      color: white;
-      border: none;
-      border-radius: 50px;
-      padding: 14px 22px;
-      font-size: 16px;
-      font-weight: 600;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
-    .floating-btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 18px rgba(0,0,0,0.25);
-    }
-    .alert-success {
-      border-radius: 15px;
-      font-weight: 500;
-    }
+    * { font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #d1f4f9, #fef6e4); min-height: 100vh; color: #333; }
+    h1 { font-weight: 700; color: #2b6777; letter-spacing: 1px; text-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+    .card { border: none; border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.7); box-shadow: 0 8px 20px rgba(0,0,0,0.1); transition: transform 0.2s ease, box-shadow 0.3s ease; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
+    .card-header { font-weight: 600; font-size: 1.1rem; border-radius: 20px 20px 0 0 !important; }
+    .btn-success { background: linear-gradient(45deg, #38b000, #70e000); border: none; border-radius: 30px; padding: 8px 20px; transition: all 0.2s ease; }
+    .btn-success:hover { transform: scale(1.05); background: linear-gradient(45deg, #2b9348, #55a630); }
+    .calendar { letter-spacing: 2px; font-weight: 600; color: #2b6777; }
+    canvas { max-height: 280px; }
+    .habit-list span:first-child { font-weight: 500; text-transform: capitalize; }
+    .habit-list span:last-child { font-weight: 600; color: #2b6777; }
+    .floating-btn { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #1e88e5, #42a5f5); color: white; border: none; border-radius: 50px; padding: 14px 22px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 12px rgba(0,0,0,0.2); transition: all 0.3s ease; cursor: pointer; }
+    .floating-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 18px rgba(0,0,0,0.25); }
+    .alert-success { border-radius: 15px; font-weight: 500; }
   </style>
 </head>
 
 <body class="p-4">
 
 <div class="container">
-  <h1 class="text-center mb-5">🌿 Thrive: Daily Habit Tracker</h1>
+  <h1 class="text-center mb-3">🌿 Thrive: Daily Habit Tracker</h1>
+
+  <!-- Username Input -->
+  <form method="GET" class="mb-4 d-flex justify-content-center align-items-center">
+    <input type="text" name="username" class="form-control w-25 me-2 rounded-pill shadow-sm text-center" placeholder="Enter your username" value="{{ username }}">
+    <button type="submit" class="btn btn-primary rounded-pill">Set Username</button>
+  </form>
+
+  <!-- Leaderboard Link -->
+  <div class="text-center mb-4">
+    <a href="{{ url_for('leaderboard') }}" class="btn btn-outline-dark rounded-pill">🏆 View Leaderboard</a>
+  </div>
 
   <!-- Today’s Progress -->
   <div class="card mb-4">
@@ -107,16 +52,11 @@
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <span>{{ habit }}</span>
           <span id="value-{{ habit }}">
-            {% if habit == "water" %}
-              {{ amount }} glasses
-            {% elif habit == "exercise" %}
-              {{ amount }} sets
-            {% elif habit == "sleep" %}
-              {{ amount }} hrs
-            {% elif habit == "study" %}
-              {{ amount }} hrs
-            {% else %}
-              {{ amount }}
+            {% if habit == "water" %} {{ amount }} glasses
+            {% elif habit == "exercise" %} {{ amount }} sets
+            {% elif habit == "sleep" %} {{ amount }} hrs
+            {% elif habit == "study" %} {{ amount }} hrs
+            {% else %} {{ amount }}
             {% endif %}
           </span>
         </li>
@@ -130,6 +70,7 @@
     <div class="card-header bg-success text-white">Log a Habit</div>
     <div class="card-body">
       <form method="POST" class="row g-3 justify-content-center align-items-center">
+        <input type="hidden" name="username" value="{{ username }}">
         <div class="col-md-4">
           <select name="habit" class="form-select rounded-pill shadow-sm">
             {% for habit in targets.keys() %}
@@ -176,71 +117,97 @@
 
 <!-- Scripts -->
 <script>
-  // Chart.js
-  document.addEventListener("DOMContentLoaded", async () => {
-    const res = await fetch("/chart-data");
+document.addEventListener("DOMContentLoaded", async () => {
+    const res = await fetch(`/chart-data?username={{ username }}`);
     const data = await res.json();
     const ctx = document.getElementById("habitChart").getContext("2d");
 
     new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          { label: '💧 Water', data: data.water, fill: false, borderWidth: 2 },
-          { label: '🏋️ Exercise', data: data.exercise, fill: false, borderWidth: 2 },
-          { label: '😴 Sleep', data: data.sleep, fill: false, borderWidth: 2 },
-          { label: '📖 Study', data: data.study, fill: false, borderWidth: 2 }
-        ]
-      },
-      options: {
-        responsive: true,
-        tension: 0.4,
-        plugins: {
-          legend: { labels: { usePointStyle: true, font: { size: 14 } } }
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: '💧 Water (glasses)',
+                    data: data.water,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderRadius: 8
+                },
+                {
+                    label: '🏋️ Exercise (sets)',
+                    data: data.exercise,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderRadius: 8
+                },
+                {
+                    label: '😴 Sleep (hrs)',
+                    data: data.sleep,
+                    backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                    borderRadius: 8
+                },
+                {
+                    label: '📖 Study (hrs)',
+                    data: data.study,
+                    backgroundColor: 'rgba(153, 102, 255, 0.7)',
+                    borderRadius: 8
+                }
+            ]
         },
-        scales: {
-          x: { grid: { display: false } },
-          y: { grid: { color: "#eee" } }
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 13 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "#eee" },
+                    ticks: { font: { size: 13 } }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { usePointStyle: true, font: { size: 14 } }
+                },
+                title: {
+                    display: true,
+                    text: '7-Day Habit Performance Comparison',
+                    font: { size: 16, weight: 'bold' },
+                    color: '#2b6777'
+                }
+            }
         }
-      }
     });
-  });
+});
 
-  // Fetch AI Feedback (same logic as before)
-  async function fetchAIReport() {
+// AI Feedback
+async function fetchAIReport() {
     try {
-      const resp = await fetch("/generate_ai_feedback");
-      const data = await resp.json();
+        const resp = await fetch(`/generate_ai_feedback?username={{ username }}`);
+        const data = await resp.json();
+        if (data.feedback) {
+            burstConfetti(3000);
+            alert("🧠 Your Weekly AI Report:\n\n" + data.feedback);
+        } else {
+            alert("No data found for the last 7 days.");
+        }
+    } catch (err) { console.error(err); }
+}
 
-      if (data.feedback) {
-        burstConfetti(3000);
-        alert("🧠 Your Weekly AI Report:\n\n" + data.feedback);
-        showNotification("Weekly Wellness Report", data.feedback);
-      } else {
-        alert("No data found for the last 7 days.");
-      }
-    } catch (err) {
-      console.error("Error fetching AI feedback:", err);
-    }
-  }
-
-  // Basic confetti for AI report celebration
-  function burstConfetti(durationMs=2000) {
+function burstConfetti(durationMs=2000) {
     const end = Date.now() + durationMs;
     (function frame() {
-      confetti({ particleCount: 5 + Math.random()*5, startVelocity: 30, spread: 360, origin: { x: Math.random(), y: Math.random()-0.2 } });
-      if (Date.now() < end) requestAnimationFrame(frame);
+        confetti({
+            particleCount: 5 + Math.random() * 5,
+            startVelocity: 30,
+            spread: 360,
+            origin: { x: Math.random(), y: Math.random() - 0.2 }
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
     })();
-  }
-
-  function showNotification(title, body) {
-    if ("Notification" in window && Notification.permission === "granted")
-      new Notification(title, { body });
-  }
-
-  if ("Notification" in window && Notification.permission === "default")
-    Notification.requestPermission();
+}
 </script>
 </body>
 </html>
