@@ -234,6 +234,23 @@
     pollStatusAndHandle();
     setInterval(pollStatusAndHandle, POLL_INTERVAL_MS);
   });
+  async function fetchAIReport() {
+  try {
+    const resp = await fetch("/generate_ai_feedback");
+    const data = await resp.json();
+
+    if (data.feedback) {
+      // Show alert, confetti, or notification
+      alert("🧠 Your Weekly Report:\n\n" + data.feedback);
+      showNotification("Weekly Progress Report", data.feedback);
+    } else {
+      alert("No data found for the last 7 days.");
+    }
+  } catch (err) {
+    console.error("Error fetching AI feedback:", err);
+  }
+}
+
 </script>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>

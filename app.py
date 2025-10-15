@@ -133,6 +133,10 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime, timedelta
 import random
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --- Flask App ---
 app = Flask(__name__)
@@ -158,6 +162,33 @@ CREATE TABLE IF NOT EXISTS habits (
 )
 """)
 conn.commit()
+from datetime import datetime, timedelta
+import sqlite3
+
+def get_last_7_days_summary():
+    conn = sqlite3.connect("habits.db")
+    c = conn.cursor()
+    start_date = (datetime.today() - timedelta(days=6)).strftime("%Y-%m-%d")
+
+    c.execute("""
+        SELECT date, water, exercise, sleep, streak
+        FROM habits
+        WHERE date >= ?
+        ORDER BY date ASC
+    """, (start_date,))
+    rows = c.fetchall()
+    conn.close()
+
+    data = []
+    for date_str, water, exercise, sleep, streak in rows:
+        data.append({
+            "date": date_str,
+            "water": water,
+            "exercise": exercise,
+            "sleep": sleep,
+            "streak": streak
+        })
+    return data
 
 # --- Helper Functions ---
 def init_today():
@@ -332,6 +363,44 @@ def index():
         best_streak=best_streak,
         compliment=compliment
     )
+@app.route("/generate_ai_feedback")
+def generate_ai_feedback():
+    # --- Get last 7 days’ data ---
+    data = get_last_7_days_summary()
+    if not data:
+        return jsonify({"error": "No data found for the last 7 days"}), 400
+
+    # --- Prepare a compact summary ---
+    summary_lines = []
+    for row in data:
+        summary_lines.append(
+            f"{row['date']}: Water={row['water']}, Exercise={row['exercise']}, Sleep={row['sleep']}, Streak={row['streak']}"
+        )
+    summary_text = "\n".join(summary_lines)
+
+    # --- Send to ChatGPT ---
+    prompt = f"""
+    You are a wellness coach analyzing habit data.
+    Here’s the user’s last 7 days of activity:
+    {summary_text}
+
+    Please provide a short, motivating summary (≤100 words) covering:
+    1. What went well this week.
+    2. Areas to improve.
+    3. One friendly tip for next week.
+    Make it sound like a personal coach giving gentle feedback.
+    """
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        feedback = completion.choices[0].message.content.strip()
+        return jsonify({"feedback": feedback})
+    except Exception as e:
+        print("AI feedback error:", e)
+        return jsonify({"error": str(e)}), 500
 
 # --- Run App ---
 if __name__ == "__main__":
